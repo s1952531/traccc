@@ -1,0 +1,20 @@
+core/include/traccc/geometry/silicon_detector_description.hpp 'placement'
+
+core/include/traccc/edm/silicon_cell_collection.hpp 'channel0', 'channel1' and 'module_index'
+
+core/include/traccc/clusterization/impl/sparse_ccl.ipp
+examples/run/cpu/seq_example.cpp
+
+sh /scratch/bwynne/cuda_12.6.2_560.35.03_linux.run
+
+
+TODO:
+plot local clusters: write cluster info out into csv then process in pyplot
+
+edit cuda_seq to run only cpu parts (in lieu of gpu access), 
+maybe this is more update/functional (read: works past clusterization)
+
+for visualising spacepoints try data of 'single muon sample' rather than something saturated 
+which would give a big, indiscernible splodge 
+- look into toy detector n particles c.f. readme 
+(n is 2000 in readme, is there a version with smaller n?)

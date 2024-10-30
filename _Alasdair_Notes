@@ -1,3 +1,0 @@
-core/include/traccc/geometry/silicon_detector_description.hpp 'placement'
-
-core/include/traccc/edm/silicon_cell_collection.hpp 'channel0', 'channel1' and 'module_index'
