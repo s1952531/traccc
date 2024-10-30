@@ -33,3 +33,7 @@
 
 # VSCode build output.
 out/
+
+# builds
+build/
+buildCPU/
