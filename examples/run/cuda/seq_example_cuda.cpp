@@ -195,6 +195,9 @@ int seq_run(const traccc::opts::detector& detector_opts,
     for (std::size_t event = input_opts.skip;
          event < input_opts.events + input_opts.skip; ++event) {
 
+        std::cout << "\n\n\n" << std::endl;
+        std::cout << "Processing event " << event << std::endl;
+
         // Instantiate host containers/collections
         traccc::host::clusterization_algorithm::output_type
             measurements_per_event;
@@ -243,108 +246,141 @@ int seq_run(const traccc::opts::detector& detector_opts,
             {
                 traccc::performance::timer t("Clusterization (cuda)",
                                              elapsedTimes);
+
+                std::cout << "Performing Clusterization (cuda)" << std::endl;
+
                 // Reconstruct it into spacepoints on the device.
                 measurements_cuda_buffer =
                     ca_cuda(cells_buffer, device_det_descr);
                 ms_cuda(measurements_cuda_buffer);
                 stream.synchronize();
+
+                std::cout << measurements_per_event.size() << " measurements (cuda)" << std::endl;
+                std::cout << "Finished Clusterization (cuda)" << std::endl;
             }  // stop measuring clusterization cuda timer
 
             // CPU
             if (accelerator_opts.compare_with_cpu) {
+                std::cout << "Performing Clusterization (cpu)" << std::endl;
+
                 traccc::performance::timer t("Clusterization  (cpu)",
                                              elapsedTimes);
                 measurements_per_event =
                     ca(vecmem::get_data(cells_per_event), host_det_descr_data);
+                std::cout << measurements_per_event.size() << " measurements (cpu)" << std::endl;
+                std::cout << "Finished Clusterization (cpu)" << std::endl;
             }  // stop measuring clusterization cpu timer
 
             // Perform seeding, track finding and fitting only when using a
             // Detray geometry.
+            std::cout << "Sf runs if the following is true: " << detector_opts.use_detray_detector << std::endl;
             if (detector_opts.use_detray_detector) {
 
                 // CUDA
                 {
+                    std::cout << "Performing Spacepoint Formation (cuda)" << std::endl;
+
                     traccc::performance::timer t("Spacepoint formation (cuda)",
                                                  elapsedTimes);
                     spacepoints_cuda_buffer =
                         sf_cuda(device_detector_view, measurements_cuda_buffer);
                     stream.synchronize();
+
+                    std::cout << "Finished Spacepoint Formation (cuda)" << std::endl;
                 }  // stop measuring spacepoint formation cuda timer
 
                 // CPU
                 if (accelerator_opts.compare_with_cpu) {
                     traccc::performance::timer t("Spacepoint formation  (cpu)",
                                                  elapsedTimes);
+                    std::cout << "Performing Spacepoint Formation (cpu)" << std::endl;
                     spacepoints_per_event =
                         sf(host_detector,
                            vecmem::get_data(measurements_per_event));
+                    std::cout << "Finished Spacepoint Formation (cpu)" << std::endl;
                 }  // stop measuring spacepoint formation cpu timer
 
                 // CUDA
                 {
                     traccc::performance::timer t("Seeding (cuda)",
                                                  elapsedTimes);
+                    std::cout << "Performing Seeding (cuda)" << std::endl;
                     seeds_cuda_buffer = sa_cuda(spacepoints_cuda_buffer);
                     stream.synchronize();
+                    std::cout << "Finished Seeding (cuda)" << std::endl;
                 }  // stop measuring seeding cuda timer
 
                 // CPU
                 if (accelerator_opts.compare_with_cpu) {
                     traccc::performance::timer t("Seeding  (cpu)",
                                                  elapsedTimes);
+                    std::cout << "Performing Seeding (cpu)" << std::endl;
                     seeds = sa(spacepoints_per_event);
+                    std::cout << "Finished Seeding (cpu)" << std::endl;
                 }  // stop measuring seeding cpu timer
 
                 // CUDA
                 {
                     traccc::performance::timer t("Track params (cuda)",
                                                  elapsedTimes);
+                    std::cout << "Performing Track params (cuda)" << std::endl;
                     params_cuda_buffer = tp_cuda(spacepoints_cuda_buffer,
                                                  seeds_cuda_buffer, field_vec);
                     stream.synchronize();
+                    std::cout << "Finished Track params (cuda)" << std::endl;
                 }  // stop measuring track params timer
 
                 // CPU
                 if (accelerator_opts.compare_with_cpu) {
                     traccc::performance::timer t("Track params  (cpu)",
                                                  elapsedTimes);
+                    std::cout << "Performing Track params (cpu)" << std::endl;
                     params = tp(spacepoints_per_event, seeds, field_vec);
+                    std::cout << "Finished Track params (cpu)" << std::endl;
                 }  // stop measuring track params cpu timer
 
                 // CUDA
                 {
                     traccc::performance::timer timer{"Track finding (cuda)",
                                                      elapsedTimes};
+                    std::cout << "Performing Track finding (cuda)" << std::endl;
                     track_candidates_buffer = finding_alg_cuda(
                         device_detector_view, field, measurements_cuda_buffer,
                         params_cuda_buffer);
+                    std::cout << "Finished Track finding (cuda)" << std::endl;
                 }
 
                 // CPU
                 if (accelerator_opts.compare_with_cpu) {
                     traccc::performance::timer timer{"Track finding (cpu)",
                                                      elapsedTimes};
+                    std::cout << "Performing Track finding (cpu)" << std::endl; 
                     track_candidates =
                         finding_alg(host_detector, field,
                                     vecmem::get_data(measurements_per_event),
                                     vecmem::get_data(params));
+                    std::cout << "Finished Track finding (cpu)" << std::endl;
                 }
 
                 // CUDA
                 {
                     traccc::performance::timer timer{"Track fitting (cuda)",
                                                      elapsedTimes};
+                    std::cout << "Performing Track fitting (cuda)" << std::endl;
                     track_states_buffer = fitting_alg_cuda(
                         device_detector_view, field, track_candidates_buffer);
+                    std::cout << "Finished Track fitting (cuda)" << std::endl;
                 }
 
                 // CPU
                 if (accelerator_opts.compare_with_cpu) {
                     traccc::performance::timer timer{"Track fitting (cpu)",
                                                      elapsedTimes};
+                    std::cout << "Performing Track fitting (cpu)" << std::endl;
                     track_states =
                         fitting_alg(host_detector, field,
                                     traccc::get_data(track_candidates));
+                    std::cout << "Finished Track fitting (cpu)" << std::endl;
                 }
             }
 
@@ -354,6 +390,7 @@ int seq_run(const traccc::opts::detector& detector_opts,
           compare cpu and cuda result
           ----------------------------------*/
 
+        std::cout << "Comparing CPU and CUDA results" << std::endl;
         traccc::measurement_collection_types::host measurements_per_event_cuda;
         traccc::spacepoint_collection_types::host spacepoints_per_event_cuda;
         traccc::seed_collection_types::host seeds_cuda;
@@ -448,6 +485,7 @@ int seq_run(const traccc::opts::detector& detector_opts,
         n_fitted_tracks += track_states.size();
         n_fitted_tracks_cuda += track_states_cuda.size();
 
+        
         if (performance_opts.run) {
 
             // TODO: Do evt_data.fill_cca_result(...) with cuda clusters and
