@@ -9,10 +9,10 @@ sh /scratch/bwynne/cuda_12.6.2_560.35.03_linux.run
 
 
 TODO:
-plot local clusters: write cluster info out into csv then process in pyplot
-
 edit cuda_seq to run only cpu parts (in lieu of gpu access), 
 maybe this is more update/functional (read: works past clusterization)
+
+plot local clusters: write cluster info out into csv then process in pyplot
 
 for visualising spacepoints try data of 'single muon sample' rather than something saturated 
 which would give a big, indiscernible splodge 
