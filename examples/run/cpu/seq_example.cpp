@@ -157,6 +157,9 @@ int seq_run(const traccc::opts::input_data& input_opts,
     for (unsigned int event = input_opts.skip;
          event < input_opts.events + input_opts.skip; ++event) {
 
+        std::cout << "\n\n\n" << std::endl;
+        std::cout << "Processing event " << event << std::endl;
+
         traccc::host::clusterization_algorithm::output_type
             measurements_per_event{&host_mr};
         traccc::host::spacepoint_formation_algorithm<
@@ -189,9 +192,17 @@ int seq_run(const traccc::opts::input_data& input_opts,
             {
                 traccc::performance::timer timer{"Clusterization",
                                                  elapsedTimes};
+
+                std::cout << "Performing Clusterization" << std::endl;
+
                 measurements_per_event =
                     ca(vecmem::get_data(cells_per_event), det_descr_data);
+
+                std::cout << measurements_per_event.size() << " measurements" << std::endl;
+                std::cout << "Finished Clusterization" << std::endl;
             }
+
+            std::cout << "Sf runs if the following is true: " << detector_opts.use_detray_detector << std::endl;
 
             // Perform seeding, track finding and fitting only when using a
             // Detray geometry.
@@ -202,11 +213,18 @@ int seq_run(const traccc::opts::input_data& input_opts,
                   ------------------------*/
 
                 {
+                    std::cout << "Performing Spacepoint Formation" << std::endl;
+                
                     traccc::performance::timer timer{"Spacepoint formation",
                                                      elapsedTimes};
                     spacepoints_per_event =
                         sf(detector, vecmem::get_data(measurements_per_event));
+    
+                    std::cout << "Finished Spacepoint Formation" << std::endl;
                 }
+
+
+
                 if (output_opts.directory != "") {
                     traccc::io::write(event, output_opts.directory,
                                       output_opts.format,
@@ -218,9 +236,16 @@ int seq_run(const traccc::opts::input_data& input_opts,
                   -----------------------*/
 
                 {
+
+                    std::cout << "Performing Seeding Algorithm" << std::endl;
+
                     traccc::performance::timer timer{"Seeding", elapsedTimes};
                     seeds = sa(spacepoints_per_event);
+                
+                    std::cout << "Finished Seeding Algorithm" << std::endl;
+
                 }
+
                 if (output_opts.directory != "") {
                     traccc::io::write(event, output_opts.directory,
                                       output_opts.format,
@@ -257,11 +282,20 @@ int seq_run(const traccc::opts::input_data& input_opts,
                 }
             }
 
+
+            std::cout << "resolution_opts.run = " << resolution_opts.run << std::endl;
+
             // Perform ambiguity resolution only if asked for.
             if (resolution_opts.run) {
                 traccc::performance::timer timer{"Track ambiguity resolution",
                                                  elapsedTimes};
+
+                std::cout << "Performing Ambiguity Resolution" << std::endl;
+
                 resolved_track_states = resolution_alg(track_states);
+
+                std::cout << "Finished Ambiguity Resolution" << std::endl;
+            
             }
 
             /*----------------------------
@@ -356,6 +390,9 @@ int main(int argc, char* argv[]) {
          performance_opts},
         argc,
         argv};
+
+    //std::cout << "setting resolution_opts.run to 0 " << resolution_opts.run << std::endl;
+    //resolution_opts.run = 0;
 
     // Run the application.
     return seq_run(input_opts, output_opts, detector_opts, clusterization_opts,
