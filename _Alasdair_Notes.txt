@@ -14,6 +14,9 @@ maybe this is more update/functional (read: works past clusterization)
 
 plot local clusters: write cluster info out into csv then process in pyplot
 
+see https://indico.cern.ch/event/1295479/contributions/5616089/attachments/2749271/4784798/Massively_Parallel_Clustering_Algorithm_R_D_in_ACTS-2.pdf
+slide 6
+
 for visualising spacepoints try data of 'single muon sample' rather than something saturated 
 which would give a big, indiscernible splodge 
 - look into toy detector n particles c.f. readme 
