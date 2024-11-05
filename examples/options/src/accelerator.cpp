@@ -18,11 +18,16 @@ accelerator::accelerator() : interface("Accelerator Options") {
     m_desc.add_options()("compare-with-cpu",
                          boost::program_options::bool_switch(&compare_with_cpu),
                          "Compare accelerator output with that of the CPU");
+
+    m_desc.add_options()("enable-cuda",
+                         boost::program_options::bool_switch(&enable_cuda),
+                         "Enable the CUDA code");
 }
 
 std::ostream& accelerator::print_impl(std::ostream& out) const {
 
-    out << "  Compare with CPU results: " << (compare_with_cpu ? "yes" : "no");
+    out << "  Compare with CPU results: " << (compare_with_cpu ? "yes" : "no") << "\n";
+    out << "  Enable CUDA code:         " << (enable_cuda ? "yes" : "no");
     return out;
 }
 
