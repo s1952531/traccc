@@ -15,10 +15,13 @@ cmake --build build -j12
 TODO:
 edit cuda_seq to run only cpu parts (in lieu of gpu access), 
 maybe this is more update/functional (read: works past clusterization)
-* It is virtually the same code (see //Discrepancy between CPU comments) 
+* It is virtually the same code (see //Discrepancy between CPU comments) thus doesn't run past clusterization: 
+* detector_opts.use_detray_detector controls flow and is false by default,
+* changing this to true using --use-detray-detector results in "No readers registered! Need at least a geometry reader" 
+* from /home/s1952531/traccc_fork/build/_deps/detray-src/io/include/detray/io/frontend/detail/detector_components_reader.hpp
 
 plot local clusters: write cluster info out into csv then process in pyplot
-* Have done so but seems incorrect (too sparse)
+* Have done so (for single event in seq_example_cuda) but seems incorrect (too sparse)
 * Unsure how to utilise clusters.cell_indices() to pull out data so doing it cell by cell in '// Add cells to their clusters.' loop
 * (in /home/s1952531/traccc_fork/core/src/clusterization/sparse_ccl_algorithm.cpp)
 
@@ -29,6 +32,4 @@ for visualising spacepoints try data of 'single muon sample' rather than somethi
 which would give a big, indiscernible splodge 
 - look into toy detector n particles c.f. readme 
 (n is 2000 in readme, is there a version with smaller n?)
-* seq_example (cuda or cpu) don't run past clusterization: detector_opts.use_detray_detector controls flow and is false by default,
-* changing this to true using --use-detray-detector results in "No readers registered! Need at least a geometry reader" 
-* from /home/s1952531/traccc_fork/build/_deps/detray-src/io/include/detray/io/frontend/detail/detector_components_reader.hpp
+* seq_example (cuda or cpu) doesn't run past clusterization so not looked into sf and visualisation
