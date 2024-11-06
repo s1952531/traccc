@@ -7,12 +7,20 @@ examples/run/cpu/seq_example.cpp
 
 sh /scratch/bwynne/cuda_12.6.2_560.35.03_linux.run
 
+Commands:
+build/bin/traccc_seq_example_cuda --detector-file=tml_detector/trackml-detector.csv --digitization-file=tml_detector/default-geometric-config-generic.json --input-directory=tml_pixels/ --input-events=10 --compare-with-cpu 
+cmake --build build -j12
+
 
 TODO:
 edit cuda_seq to run only cpu parts (in lieu of gpu access), 
 maybe this is more update/functional (read: works past clusterization)
+* It is virtually the same code (see //Discrepancy between CPU comments) 
 
 plot local clusters: write cluster info out into csv then process in pyplot
+* Have done so but seems incorrect (too sparse)
+* Unsure how to utilise clusters.cell_indices() to pull out data so doing it cell by cell in '// Add cells to their clusters.' loop
+* (in /home/s1952531/traccc_fork/core/src/clusterization/sparse_ccl_algorithm.cpp)
 
 see https://indico.cern.ch/event/1295479/contributions/5616089/attachments/2749271/4784798/Massively_Parallel_Clustering_Algorithm_R_D_in_ACTS-2.pdf
 slide 6
@@ -21,3 +29,6 @@ for visualising spacepoints try data of 'single muon sample' rather than somethi
 which would give a big, indiscernible splodge 
 - look into toy detector n particles c.f. readme 
 (n is 2000 in readme, is there a version with smaller n?)
+* seq_example (cuda or cpu) don't run past clusterization: detector_opts.use_detray_detector controls flow and is false by default,
+* changing this to true using --use-detray-detector results in "No readers registered! Need at least a geometry reader" 
+* from /home/s1952531/traccc_fork/build/_deps/detray-src/io/include/detray/io/frontend/detail/detector_components_reader.hpp
