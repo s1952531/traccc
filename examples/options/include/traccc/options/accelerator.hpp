@@ -22,6 +22,9 @@ class accelerator : public interface {
     /// Whether to compare the accelerator code's output with that of the CPU
     bool compare_with_cpu = false;
 
+    /// Whether to enable the CUDA code
+    bool enable_cuda = false;
+
     /// @}
 
     /// Constructor
