@@ -21,7 +21,7 @@ maybe this is more update/functional (read: works past clusterization)
 * from /home/s1952531/traccc_fork/build/_deps/detray-src/io/include/detray/io/frontend/detail/detector_components_reader.hpp
 
 plot local clusters: write cluster info out into csv then process in pyplot
-* Have done so (for single event in seq_example_cuda) but seems incorrect (too sparse)
+* Have done so (for single event in seq_example_cuda). Note some modules have few clusters and some clusters have as few as 1 cell.
 * Unsure how to utilise clusters.cell_indices() to pull out data so doing it cell by cell in '// Add cells to their clusters.' loop
 * (in /home/s1952531/traccc_fork/core/src/clusterization/sparse_ccl_algorithm.cpp)
 
