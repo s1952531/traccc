@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -5,7 +6,8 @@ import pandas as pd
 df = pd.read_csv('test.csv')
 
 # Filter by module (replace 0 with your desired module_index)
-module_index = 0
+#get the module with the most clusters
+module_index = df['module_index'].value_counts().idxmax()
 module_data = df[df['module_index'] == module_index]
 
 # Plotting
