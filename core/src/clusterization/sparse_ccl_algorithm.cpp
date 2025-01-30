@@ -31,7 +31,7 @@ namespace traccc::host {
     sparse_ccl_algorithm::output_type sparse_ccl_algorithm::operator()(
         const edm::silicon_cell_collection::const_view& cells_view) const {
 
-    std::cout << "calling ca()" << std::endl;
+    std::cout << "\t(inside sparse_ccl_algorithm.cpp)" << std::endl;
 
     // Construct the device view of the cells.
     std::cout << "\t" << "Constructing the device view of the cells" << std::endl;
@@ -79,7 +79,7 @@ namespace traccc::host {
         //     file_path = "ClusterizationData/event" + std::to_string(event_idx) + ".csv";
         //     event_idx++;
         // } while (std::filesystem::exists(file_path));  // Increment until a non-existing file is found
-        file_path = "ClusterizationData/test.csv";
+        file_path = "Plotting/ClusterizationData/test.csv";
 
         // Open the file for writing
         std::ofstream myfile;
@@ -101,10 +101,6 @@ namespace traccc::host {
         //}      
         
     }
-
-    std::cout << cluster_indices.size() << std::endl;
-
-    std::cout << clusters.cell_indices().size() << std::endl;
     
     std::cout << "\t" << "Returning the clusters" << std::endl;
     

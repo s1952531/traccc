@@ -83,6 +83,13 @@
       "typeindex": "cpp",
       "typeinfo": "cpp",
       "valarray": "cpp",
-      "variant": "cpp"
+      "variant": "cpp",
+      "__bit_reference": "cpp",
+      "future": "cpp",
+      "scoped_allocator": "cpp",
+      "csetjmp": "cpp",
+      "expected": "cpp",
+      "hash_map": "cpp",
+      "*.icc": "cpp"
    }
 }

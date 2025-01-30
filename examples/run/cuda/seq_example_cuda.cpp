@@ -60,6 +60,11 @@
 #include <iostream>
 #include <memory>
 
+// includes added for truth info
+#include "traccc/utils/seed_generator.hpp"
+#include "traccc/definitions/primitives.hpp"
+
+
 int seq_run(const traccc::opts::detector& detector_opts,
             const traccc::opts::input_data& input_opts,
             const traccc::opts::clusterization& clusterization_opts,
@@ -69,7 +74,7 @@ int seq_run(const traccc::opts::detector& detector_opts,
             const traccc::opts::performance& performance_opts,
             const traccc::opts::accelerator& accelerator_opts) {
 
-    std::cout << "Is Cuda enabled?" << accelerator_opts.enable_cuda << std::endl;
+    std::cout << "Is Cuda enabled? " << accelerator_opts.enable_cuda << std::endl;
 
     // Memory resources used by the application.
     vecmem::host_memory_resource host_mr;
@@ -198,9 +203,43 @@ int seq_run(const traccc::opts::detector& detector_opts,
 
     traccc::performance::timing_info elapsedTimes;
 
+    // ---------TRUTH INFO
+    // Standard deviations for seed track parameters
+    static constexpr std::array<traccc::scalar, traccc::e_bound_size> stddevs =
+        {1e-4f * detray::unit<traccc::scalar>::mm,
+         1e-4f * detray::unit<traccc::scalar>::mm,
+         1e-3f,
+         1e-3f,
+         1e-4f / detray::unit<traccc::scalar>::GeV,
+         1e-4f * detray::unit<traccc::scalar>::ns};
+
+    // Seed generator
+    traccc::seed_generator<traccc::default_detector::host> sg(host_detector, stddevs);
+    // ---------TRUTH INFO
+
     // Loop over events
     for (std::size_t event = input_opts.skip;
          event < input_opts.events + input_opts.skip; ++event) {
+
+        // ---------TRUTH INFO
+        // Truth Track Candidates
+        std::cout << "Attempting to construct Event map2 object" << std::endl;
+
+        traccc::event_map2 evt_map2(event, input_opts.directory,
+                                    input_opts.directory, input_opts.directory);
+
+        std::cout << "Event map2 object constructed" << std::endl;
+
+        traccc::track_candidate_container_types::host truth_track_candidates =
+            evt_map2.generate_truth_candidates(sg, host_mr);
+
+        // Prepare truth seeds
+        traccc::bound_track_parameters_collection_types::host truth_seeds(&host_mr);
+        const unsigned int n_tracks = truth_track_candidates.size();
+        for (unsigned int i_trk = 0; i_trk < n_tracks; i_trk++) {
+            truth_seeds.push_back(truth_track_candidates.at(i_trk).header);
+        }
+        // ---------TRUTH INFO
 
         if (event != 0){continue;}
         
@@ -280,13 +319,13 @@ int seq_run(const traccc::opts::detector& detector_opts,
                                              elapsedTimes);
                 measurements_per_event =
                     ca(vecmem::get_data(cells_per_event), host_det_descr_data);
-                std::cout << measurements_per_event.size() << " measurements (cpu)" << std::endl;
+                //std::cout << measurements_per_event.size() << " measurements (cpu)" << std::endl;
                 std::cout << "Finished Clusterization (cpu)" << std::endl;
             }  // stop measuring clusterization cpu timer
 
             // Perform seeding, track finding and fitting only when using a
             // Detray geometry.
-            std::cout << "Sf runs if the following is true: " << detector_opts.use_detray_detector << std::endl;
+            //std::cout << "Sf runs if the following is true: " << detector_opts.use_detray_detector << std::endl;
             if (detector_opts.use_detray_detector) {
 
                 // CUDA
