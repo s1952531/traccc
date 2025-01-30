@@ -13,6 +13,8 @@
 #include "traccc/seeding/triplet_finding_helper.hpp"
 #include "traccc/utils/algorithm.hpp"
 
+#include <iostream>
+
 namespace traccc {
 
 /// Triplet finding to search the compatible combintations of two doublets which
@@ -63,6 +65,8 @@ struct triplet_finding : public algorithm<triplet_collection_types::host(
         const doublet_collection_types::host& doublets_mid_top,
         const lin_circle_collection_types::host& lin_circles_mid_top,
         output_type& o) const {
+
+        std::cout << "\t\t\t\t\t(inside triplet_finding.hpp)" << std::endl;
         // output
         auto& triplets = o;
 

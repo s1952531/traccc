@@ -10,6 +10,8 @@
 
 #include "traccc/seeding/seed_selecting_helper.hpp"
 
+#include <iostream>
+
 namespace traccc {
 
 seed_filtering::seed_filtering(const seedfilter_config& config)
@@ -19,6 +21,8 @@ void seed_filtering::operator()(
     const spacepoint_collection_types::host& sp_collection, const sp_grid& g2,
     triplet_collection_types::host& triplets,
     seed_collection_types::host& seeds) const {
+
+    std::cout << "\t\t\t\t\t(inside seed_filtering.cpp)" << std::endl;
 
     seed_collection_types::host seeds_per_spM;
 

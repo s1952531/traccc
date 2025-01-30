@@ -25,7 +25,7 @@ seeding_algorithm::seeding_algorithm(const seedfinder_config& finder_config,
 
 seeding_algorithm::output_type seeding_algorithm::operator()(
     const spacepoint_collection_types::host& spacepoints) const {
-
+    std::cout << "\t(inside seeding_algorithm.cpp)" << std::endl;
     return m_seed_finding(spacepoints, m_spacepoint_binning(spacepoints));
 }
 

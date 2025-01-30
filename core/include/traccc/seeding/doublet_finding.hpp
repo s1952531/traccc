@@ -15,6 +15,8 @@
 #include "traccc/seeding/doublet_finding_helper.hpp"
 #include "traccc/utils/algorithm.hpp"
 
+#include <iostream>
+
 namespace traccc {
 
 /// Doublet finding to search the combinations of two compatible spacepoints
@@ -59,6 +61,7 @@ struct doublet_finding
     /// @return a pair of vectors of doublets and transformed coordinates
     void operator()(const sp_grid& g2, const sp_location& l,
                     output_type& o) const {
+        std::cout << "\t\t\t\t\t(inside doublet_finding.hpp)" << std::endl;
         // output
         auto& doublets = o.first;
         auto& lin_circles = o.second;
