@@ -8,8 +8,16 @@ examples/run/cpu/seq_example.cpp
 sh /scratch/bwynne/cuda_12.6.2_560.35.03_linux.run
 
 Commands:
-build/bin/traccc_seq_example_cuda --detector-file=tml_detector/trackml-detector.csv --digitization-file=tml_detector/default-geometric-config-generic.json --input-directory=tml_pixels/ --input-events=10 --compare-with-cpu 
-cmake --build build -j12
+tagBuild/bin/traccc_seq_example \
+   --detector-file=geometries/odd/odd-detray_geometry_detray.json \
+   --material-file=geometries/odd/odd-detray_material_detray.json \
+   --grid-file=geometries/odd/odd-detray_surface_grids_detray.json \
+   --use-detray-detector \
+   --digitization-file=geometries/odd/odd-digi-geometric-config.json \
+   --use-acts-geom-source --input-directory=odd/geant4_10muon_10GeV/ \
+   --input-events=10
+   
+cmake --build tagBuild/ -j12
 
 
 TODO:

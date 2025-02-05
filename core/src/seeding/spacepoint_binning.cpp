@@ -30,8 +30,8 @@ void write_bin_borders_to_file(const auto& axis, const std::string& filename) {
     bin_borders.open(filename, std::ios_base::app);
     
     auto num_bins = axis.bins();
-    for (auto i = 0; i < num_bins; i++) {
-        auto borders = axis.borders(i);
+    for (unsigned int i = 0; i < num_bins; i++) {
+        auto borders = axis.borders(static_cast<detray::dindex>(i));
         bin_borders << borders[0] << "," << borders[1] << std::endl;
     }
 
@@ -59,9 +59,9 @@ void write_r_bins_to_file(const auto& m_config)
 
     r_bin_borders.open("Plotting/SeedingData/r_bin_borders.csv", std::ios_base::app);
 
-    int num_r_bins = m_config.get_num_rbins();
+    auto num_r_bins = m_config.get_num_rbins();
     std::cout << "num_r_bins: " << num_r_bins << std::endl;
-    for (int i = 0; i < num_r_bins + 1; i++) 
+    for (unsigned int i = 0; i < num_r_bins + 1; i++) 
     {
         r_bin_borders << i << std::endl;
     }

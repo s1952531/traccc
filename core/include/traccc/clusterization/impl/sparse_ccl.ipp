@@ -71,9 +71,9 @@
         // The number of cells.
         const unsigned int n_cells = cells.size();
 
-        std::cout << "\t\t(inside sparse_ccl.ipp)" << std::endl;
+        //std::cout << "\t\t(inside sparse_ccl.ipp)" << std::endl;
 
-        std::cout << "\t\tfirst scan: pixel association" << std::endl;
+        //std::cout << "\t\tfirst scan: pixel association" << std::endl;
         // first scan: pixel association
         unsigned int start_j = 0;
         for (unsigned int i = 0; i < n_cells; ++i) {
@@ -88,7 +88,7 @@
             }
         }
 
-        std::cout << "\t\tsecond scan: transitive closure" << std::endl;
+        //std::cout << "\t\tsecond scan: transitive closure" << std::endl;
         // second scan: transitive closure
         for (unsigned int i = 0; i < n_cells; ++i) {
             if (labels[i] == i) {

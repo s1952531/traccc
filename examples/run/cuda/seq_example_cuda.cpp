@@ -221,25 +221,7 @@ int seq_run(const traccc::opts::detector& detector_opts,
     for (std::size_t event = input_opts.skip;
          event < input_opts.events + input_opts.skip; ++event) {
 
-        // ---------TRUTH INFO
-        // Truth Track Candidates
-        std::cout << "Attempting to construct Event map2 object" << std::endl;
-
-        traccc::event_map2 evt_map2(event, input_opts.directory,
-                                    input_opts.directory, input_opts.directory);
-
-        std::cout << "Event map2 object constructed" << std::endl;
-
-        traccc::track_candidate_container_types::host truth_track_candidates =
-            evt_map2.generate_truth_candidates(sg, host_mr);
-
-        // Prepare truth seeds
-        traccc::bound_track_parameters_collection_types::host truth_seeds(&host_mr);
-        const unsigned int n_tracks = truth_track_candidates.size();
-        for (unsigned int i_trk = 0; i_trk < n_tracks; i_trk++) {
-            truth_seeds.push_back(truth_track_candidates.at(i_trk).header);
-        }
-        // ---------TRUTH INFO
+        //TODO: extract/compare with truth info
 
         if (event != 0){continue;}
         
