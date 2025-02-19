@@ -79,16 +79,11 @@ namespace traccc::host {
         //     file_path = "ClusterizationData/event" + std::to_string(event_idx) + ".csv";
         //     event_idx++;
         // } while (std::filesystem::exists(file_path));  // Increment until a non-existing file is found
-        file_path = "Plotting/ClusterizationData/test.csv";
+        file_path = "Plotting/ClusterizationData/clusters.csv";
 
         // Open the file for writing
         std::ofstream myfile;
         myfile.open(file_path, std::ios_base::app);
-
-        // If the file is empty, write the header
-        if (std::filesystem::file_size(file_path) == 0) {
-            myfile << "cluster,module_index,channel0,channel1\n";
-        }
 
         // Write the data
         myfile << cluster_indices[cell_idx] << ","
