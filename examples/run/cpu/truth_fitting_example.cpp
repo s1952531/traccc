@@ -115,7 +115,9 @@ int main(int argc, char* argv[]) {
     for (auto event = input_opts.skip;
          event < input_opts.events + input_opts.skip; ++event) {
 
+        std::cout << "Processing event " << event << std::endl;
         // Truth Track Candidates
+        std::cout << "Generating truth track candidates" << std::endl;
         traccc::event_data evt_data(input_opts.directory, event, host_mr,
                                     input_opts.use_acts_geom_source, &host_det,
                                     input_opts.format, false);
@@ -124,6 +126,7 @@ int main(int argc, char* argv[]) {
             evt_data.generate_truth_candidates(sg, host_mr);
 
         // Run fitting
+        std::cout << "Running fitting" << std::endl;
         auto track_states = host_fitting(
             host_det, field, traccc::get_data(truth_track_candidates));
 
