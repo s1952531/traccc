@@ -2,22 +2,6 @@
 
 void write_output_headers()
 {
-    std::vector<std::string> files_to_clear = {
-        "Plotting/ClusterizationData/clusters.csv",
-
-        "Plotting/SeedingData/FilteredSeeds.csv",
-        "Plotting/SeedingData/UnfilteredSeeds.csv",
-
-        "Plotting/SeedingData/r_bin_borders.csv",
-        "Plotting/SeedingData/phi_bin_borders.csv",
-        "Plotting/SeedingData/z_bin_borders.csv",
-
-        "Plotting/SeedingData/sp.csv",
-        
-        "Plotting/TrackParams/reconstructedTPs.csv",
-        "Plotting/TrackParams/truthTPs.csv"
-    };
-
     std::ofstream clusterDataFile("Plotting/ClusterizationData/clusters.csv", std::ios_base::app);
     clusterDataFile << "cluster_index, module_index, channel0, channel1" << std::endl;
     clusterDataFile.close();
@@ -64,9 +48,9 @@ void write_event_header(std::size_t event)
         "Plotting/SeedingData/FilteredSeeds.csv",
         "Plotting/SeedingData/UnfilteredSeeds.csv",
 
-        "Plotting/SeedingData/r_bin_borders.csv",
-        "Plotting/SeedingData/phi_bin_borders.csv",
-        "Plotting/SeedingData/z_bin_borders.csv",
+        // "Plotting/SeedingData/r_bin_borders.csv",
+        // "Plotting/SeedingData/phi_bin_borders.csv",
+        // "Plotting/SeedingData/z_bin_borders.csv",
 
         "Plotting/SeedingData/sp.csv",
         
