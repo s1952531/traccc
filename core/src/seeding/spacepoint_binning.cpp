@@ -24,8 +24,8 @@ void write_bin_borders_to_file(const auto& axis, const std::string& filename) {
     std::ofstream bin_borders;
 
     // clear the file if it exists
-    bin_borders.open(filename, std::ios::out);
-    bin_borders.close();
+    // bin_borders.open(filename, std::ios::out);
+    // bin_borders.close();
 
     bin_borders.open(filename, std::ios_base::app);
     
@@ -54,8 +54,8 @@ void write_r_bins_to_file(const auto& m_config)
     std::ofstream r_bin_borders;
 
     // clear the file if it exists
-    r_bin_borders.open("Plotting/SeedingData/r_bin_borders.csv", std::ios::out);
-    r_bin_borders.close();
+    // r_bin_borders.open("Plotting/SeedingData/r_bin_borders.csv", std::ios::out);
+    // r_bin_borders.close();
 
     r_bin_borders.open("Plotting/SeedingData/r_bin_borders.csv", std::ios_base::app);
 
