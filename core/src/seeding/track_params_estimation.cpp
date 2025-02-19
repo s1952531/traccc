@@ -11,6 +11,8 @@
 #include "traccc/edm/seed.hpp"
 #include "traccc/seeding/track_params_estimation_helper.hpp"
 
+#include <fstream>
+
 namespace traccc {
 
 track_params_estimation::track_params_estimation(vecmem::memory_resource& mr)
@@ -24,6 +26,9 @@ track_params_estimation::output_type track_params_estimation::operator()(
     const seed_collection_types::host::size_type num_seeds = seeds.size();
     output_type result(num_seeds, &m_mr.get());
 
+    std::ofstream reconstructedTPs;
+    reconstructedTPs.open("Plotting/TrackParams/reconstructedTPs.csv", std::ios_base::app);
+    
     for (seed_collection_types::host::size_type i = 0; i < num_seeds; ++i) {
         bound_track_parameters track_params;
         track_params.set_vector(
@@ -40,7 +45,24 @@ track_params_estimation::output_type track_params_estimation::operator()(
         track_params.set_surface_link(spB.meas.surface_link);
 
         result[i] = track_params;
+
+        //writes
+        auto cov = track_params.covariance();
+
+        for (auto dirComponent : track_params.dir())
+        {
+            reconstructedTPs << dirComponent << ", ";
+        }        
+
+        reconstructedTPs << track_params.phi() << ", "
+                        << getter::element(cov, 2, 2) <<  ", "
+                        << track_params.theta() << ", " 
+                        << getter::element(cov, 3, 3)
+                        << std::endl;
     }
+
+    reconstructedTPs.close();
+
 
     return result;
 }
