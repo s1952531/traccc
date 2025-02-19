@@ -64,6 +64,9 @@
 #include "traccc/utils/seed_generator.hpp"
 #include "traccc/definitions/primitives.hpp"
 
+// headers ive written
+#include "clear_output_files.hpp"
+#include "write_output_headers.hpp"
 
 int seq_run(const traccc::opts::detector& detector_opts,
             const traccc::opts::input_data& input_opts,
@@ -74,7 +77,7 @@ int seq_run(const traccc::opts::detector& detector_opts,
             const traccc::opts::performance& performance_opts,
             const traccc::opts::accelerator& accelerator_opts) {
 
-    std::cout << "Is Cuda enabled? " << accelerator_opts.enable_cuda << std::endl;
+    //std::cout << "Is Cuda enabled? " << accelerator_opts.enable_cuda << std::endl;
 
     // Memory resources used by the application.
     vecmem::host_memory_resource host_mr;
@@ -87,13 +90,13 @@ int seq_run(const traccc::opts::detector& detector_opts,
     // // vecmem::cuda::async_copy copy{stream.cudaStream()};
 
     // Construct the detector description object.
+    std::cout << "Constructing the detector description object... " << std::endl;                                 
     traccc::silicon_detector_description::host host_det_descr{host_mr};
         traccc::io::read_detector_description(
             host_det_descr, detector_opts.detector_file,
             detector_opts.digitization_file,
             (detector_opts.use_detray_detector ? traccc::data_format::json
                                             : traccc::data_format::csv));
-    std::cout << "Detector description object constructed" << std::endl;                                 
     traccc::silicon_detector_description::data host_det_descr_data{
         vecmem::get_data(host_det_descr)};
         
@@ -105,6 +108,7 @@ int seq_run(const traccc::opts::detector& detector_opts,
     // // copy(host_det_descr_data, device_det_descr)->wait();
 
     // Construct a Detray detector object, if supported by the configuration.
+    std::cout << "Constructing a Detray detector object... " << std::endl;                                 
     traccc::default_detector::host host_detector{host_mr};
     // // traccc::default_detector::buffer device_detector;
     // // traccc::default_detector::view device_detector_view;
@@ -131,6 +135,7 @@ int seq_run(const traccc::opts::detector& detector_opts,
     // // uint64_t n_fitted_tracks_cuda = 0;
 
     // Type definitions
+    std::cout << "Defining types... " << std::endl;
     using scalar_type = traccc::default_detector::host::scalar_type;
     using host_spacepoint_formation_algorithm =
         traccc::host::silicon_pixel_spacepoint_formation_algorithm;
@@ -154,6 +159,7 @@ int seq_run(const traccc::opts::detector& detector_opts,
     //     traccc::kalman_fitter<stepper_type, device_navigator_type>>;
 
     // Algorithm configuration(s).
+    std::cout << "Configuring algorithms... " << std::endl;
     detray::propagation::config propagation_config(propagation_opts);
 
     host_finding_algorithm::config_type finding_cfg(finding_opts);
@@ -204,6 +210,7 @@ int seq_run(const traccc::opts::detector& detector_opts,
     traccc::performance::timing_info elapsedTimes;
 
     // ---------TRUTH INFO
+    std::cout << "Setting up truth seed generator... ";
     // Standard deviations for seed track parameters
     static constexpr std::array<traccc::scalar, traccc::e_bound_size> stddevs =
         {1e-4f * detray::unit<traccc::scalar>::mm,
@@ -215,15 +222,74 @@ int seq_run(const traccc::opts::detector& detector_opts,
 
     // Seed generator
     traccc::seed_generator<traccc::default_detector::host> sg(host_detector, stddevs);
+    std::cout << "Done" << std::endl;
     // ---------TRUTH INFO
 
+    std::cout << "Prepping output files" << std::endl;
+    // clear output files
+    clear_output_files();
+
+    // write csv headers
+    write_output_headers();
+
+    std::cout << "Starting loop over events" << std::endl;
     // Loop over events
     for (std::size_t event = input_opts.skip;
          event < input_opts.events + input_opts.skip; ++event) {
 
-        //TODO: extract/compare with truth info
+        //if (event != 0){continue;}
 
-        if (event != 0){continue;}
+        std::cout << "Running event: " << event << std::endl;
+        write_event_header(event);
+
+        //TODO: extract/compare with truth info
+         // Truth Track Candidates
+        traccc::event_data evt_data(input_opts.directory, event, host_mr,
+            input_opts.use_acts_geom_source, &host_detector,
+            input_opts.format, true);
+
+        traccc::track_candidate_container_types::host truth_track_candidates =
+            evt_data.generate_truth_candidates(sg, host_mr);
+
+        // Prepare truth seeds (and write to csv)
+        std::ofstream truthSeedsFile;
+        truthSeedsFile.open("Plotting/TrackParams/truthTPs.csv", std::ios_base::app);
+
+        traccc::bound_track_parameters_collection_types::host truth_seeds(&host_mr);
+        const std::size_t n_tracks = truth_track_candidates.size();
+        for (std::size_t i_trk = 0; i_trk < n_tracks; i_trk++) 
+        {
+            truth_seeds.push_back(truth_track_candidates.at(i_trk).header);
+
+            std::cout << "Truth seed: " << truth_seeds.at(i_trk) << std::endl;
+            // std::cout << "location " << truth_seeds.at(i_trk)[0] << ", " << truth_seeds.at(i_trk)[1]<< std::endl;
+            // std::cout << "phi " << truth_seeds.at(i_trk)[2] << std::endl;
+            // std::cout << "theta " << truth_seeds.at(i_trk)[3] << std::endl;
+
+        }
+
+        for (traccc::bound_track_parameters track_params : truth_seeds)
+        {
+
+            for (auto dirComponent : track_params.dir())
+            {
+                truthSeedsFile << dirComponent << ", ";
+            }        
+            
+            auto cov = track_params.covariance();
+
+            truthSeedsFile  << track_params.phi() << ", "
+                            << detray::getter::element(cov, 2, 2) << ", "
+                            << track_params.theta() << ", " 
+                            << detray::getter::element(cov, 3, 3)
+                            << std::endl;
+        }
+
+        truthSeedsFile.close();
+
+
+        std::cout << "number of truth seeds " << truth_seeds.size() << std::endl;
+        //
         
         std::cout << "\n\n\n" << std::endl;
         std::cout << "Processing event " << event << std::endl;
