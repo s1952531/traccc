@@ -21,52 +21,72 @@
 namespace traccc {
 
 void write_bin_borders_to_file(const auto& axis, const std::string& filename) {
-    std::ofstream bin_borders;
 
-    // clear the file if it exists
-    // bin_borders.open(filename, std::ios::out);
-    // bin_borders.close();
-
-    bin_borders.open(filename, std::ios_base::app);
-    
-    auto num_bins = axis.bins();
-    for (unsigned int i = 0; i < num_bins; i++) {
-        auto borders = axis.borders(static_cast<detray::dindex>(i));
-        bin_borders << borders[0] << "," << borders[1] << std::endl;
+    // check how many lines the file has
+    std::ifstream file(filename);
+    std::string line;
+    unsigned int num_lines = 0;
+    while (std::getline(file, line)) {
+        num_lines++;
     }
+    file.close();
 
-    // auto border_values = axis.all_borders();
-    // for (scalar border_value : border_values) {
-    //     auto ibin = axis.bin(border_value);
-    //     std::cout << "ibin: " << ibin << std::endl;
-    //     auto borders = axis.borders(ibin);
-    //     std::cout << "borders[0]: " << borders[0] << std::endl;
-    //     std::cout << "borders[1]: " << borders[1] << std::endl << std::endl;
-    //     bin_borders << borders[0] << "," << borders[1] << std::endl;
-    // }
+    // only write once for all events
+    if (num_lines == 1)
+    {
+        std::ofstream bin_borders;
+        bin_borders.open(filename, std::ios_base::app);
+        
+        auto num_bins = axis.bins();
+        for (unsigned int i = 0; i < num_bins; i++) {
+            auto borders = axis.borders(static_cast<detray::dindex>(i));
+            bin_borders << borders[0] << "," << borders[1] << std::endl;
+        }
 
-    bin_borders.close();
+        // auto border_values = axis.all_borders();
+        // for (scalar border_value : border_values) {
+        //     auto ibin = axis.bin(border_value);
+        //     std::cout << "ibin: " << ibin << std::endl;
+        //     auto borders = axis.borders(ibin);
+        //     std::cout << "borders[0]: " << borders[0] << std::endl;
+        //     std::cout << "borders[1]: " << borders[1] << std::endl << std::endl;
+        //     bin_borders << borders[0] << "," << borders[1] << std::endl;
+        // }
+
+        bin_borders.close();
+    }
 
 }
 
 void write_r_bins_to_file(const auto& m_config)
 {
-    std::ofstream r_bin_borders;
-
-    // clear the file if it exists
-    // r_bin_borders.open("Plotting/SeedingData/r_bin_borders.csv", std::ios::out);
-    // r_bin_borders.close();
-
-    r_bin_borders.open("Plotting/SeedingData/r_bin_borders.csv", std::ios_base::app);
-
-    auto num_r_bins = m_config.get_num_rbins();
-    std::cout << "num_r_bins: " << num_r_bins << std::endl;
-    for (unsigned int i = 0; i < num_r_bins + 1; i++) 
-    {
-        r_bin_borders << i << std::endl;
-    }
     
-    r_bin_borders.close();
+    std::string filename = "Plotting/SeedingData/r_bin_borders.csv";
+
+    // check how many lines the file has
+    std::ifstream file(filename);
+    std::string line;
+    unsigned int num_lines = 0;
+    while (std::getline(file, line)) {
+        num_lines++;
+    }
+    file.close();
+
+    // only write once for all events
+    if (num_lines == 1)
+    {
+        std::ofstream r_bin_borders;
+        r_bin_borders.open("Plotting/SeedingData/r_bin_borders.csv", std::ios_base::app);
+
+        auto num_r_bins = m_config.get_num_rbins();
+        std::cout << "num_r_bins: " << num_r_bins << std::endl;
+        for (unsigned int i = 0; i < num_r_bins + 1; i++) 
+        {
+            r_bin_borders << i << std::endl;
+        }
+        
+        r_bin_borders.close();
+    }
 }
 
 spacepoint_binning::spacepoint_binning(
