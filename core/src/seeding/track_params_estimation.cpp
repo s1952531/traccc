@@ -47,6 +47,10 @@ track_params_estimation::output_type track_params_estimation::operator()(
         result[i] = track_params;
 
         //writes
+        const auto& spM = spacepoints.at(seeds[i].spM_link);
+        const auto& spT = spacepoints.at(seeds[i].spT_link);
+        
+
         auto cov = track_params.covariance();
 
         for (auto dirComponent : track_params.dir())
@@ -57,8 +61,12 @@ track_params_estimation::output_type track_params_estimation::operator()(
         reconstructedTPs << track_params.phi() << ", "
                         << getter::element(cov, 2, 2) <<  ", "
                         << track_params.theta() << ", " 
-                        << getter::element(cov, 3, 3)
+                        << getter::element(cov, 3, 3) << ", "
+                        << spB.x() << "," << spB.y() << "," << spB.z() << ","
+                        << spM.x() << "," << spM.y() << "," << spM.z() << ","
+                        << spT.x() << "," << spT.y() << "," << spT.z()
                         << std::endl;
+                    
     }
 
     reconstructedTPs.close();
