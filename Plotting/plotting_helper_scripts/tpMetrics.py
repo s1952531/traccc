@@ -243,7 +243,7 @@ def plotMultiEventRes(tpData):
 
     fig, ax = plt.subplots(1, 2)
 
-    for i in range(1):
+    for i in range(2):
         # Main histogram
         phiCounts, _, _ = ax[i].hist(phiRes, bins=50, alpha=0.5, label='phi', color='blue')
         thetaCounts, _, _ = ax[i].hist(thetaRes, bins=50, alpha=0.5, label='theta', color='orange')
@@ -303,7 +303,6 @@ if __name__ == "__main__":
         plotRedundancyVsAngleRange(numRecosPerTruth)
         plotRedundancyVsBinnedTheta(numRecosPerTruth, num_bins=10)
 
-        plt.plot(np.arange(10), np.arange(10))
         plt.show()
 
         # event = 0
@@ -317,8 +316,5 @@ if __name__ == "__main__":
         #     eventRes = calcEventResolutions(recoLocList, truthLocList, truthsRecoIndices, event)
         #     plotResolutions(eventRes)
 
-    #test()
-
-    plt.plot(np.arange(10), np.arange(10))
-    plt.show()
+    test()
         
