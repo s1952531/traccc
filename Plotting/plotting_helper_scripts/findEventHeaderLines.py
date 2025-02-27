@@ -1,6 +1,7 @@
 def findEventHeaderLines(filename):
     #get all lines sstarting with Event using enum
     eventHeaderLines = []
+
     with open(filename, 'r') as file:
         for i, line in enumerate(file):
             if line.startswith('Event'):
