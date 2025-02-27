@@ -16,7 +16,8 @@ def getLocs(tpData, event=0):
 
 def allRecoToTruthDists(recoLocList, truthLocList, event=0):
 
-    #phiDiff = recoLocList[:, None, 0] - truthLocList[None, :, 0] 
+    #row i of recoToTruthDists gives reco i's distance to all truths
+    #col j of recoToTruthDists gives truth j's distance to all recos
 
     #account for -pi, pi wrap around
     phiDiff = (recoLocList[:, None, 0] - truthLocList[None, :, 0] + np.pi) % (2 * np.pi) - np.pi
@@ -53,7 +54,7 @@ def getAssociatedRecoIndices(recoToTruthDists, cutoff=0.1):
 
     for i in range(numTruths):
         currDists = recoToTruthDists[:, i]
-        assocRecoIndices = np.where(currDists < cutoff)[0]
+        assocRecoIndices = np.where(currDists < cutoff)[0] #[0] to pull indices array out of (np.array([indices]))
         assocRecoIndicesList.append(assocRecoIndices)
 
     isUnique = checkUniqueIndices(assocRecoIndicesList)
@@ -65,6 +66,7 @@ def getAssociatedRecoIndices(recoToTruthDists, cutoff=0.1):
 
     return assocRecoIndicesList # a list containing a list of associated reco indices for each truth
                                 # [ [Event0s recoIndices], [Event1s recoIndices], ... ]
+                                # recoIndices are the row indice of the event's recoDf
 
 def getTruthToRecoDict(recoLocList, truthLocList, assocRecoIndicesList):
     truthToRecoDict = {}
@@ -84,7 +86,7 @@ def getTruthToRecoDict(recoLocList, truthLocList, assocRecoIndicesList):
 
     return truthToRecoDict
 
-def calcEventResolutions(recoLocList, truthLocList, assocRecoIndicesList):
+def calcEventResolutions(recoLocList, truthLocList, assocRecoIndicesList, indiceType='TruthLoc'):
     # res is (reco - truth)/truth
     # get res for phi and theta separately
 
@@ -92,6 +94,7 @@ def calcEventResolutions(recoLocList, truthLocList, assocRecoIndicesList):
 
     for truthIndex, recoIndices in enumerate(assocRecoIndicesList):
         if len(recoIndices) == 0:
+            #truthResolutions[truthIndex] = {'phi':None, 'theta':None}
             continue
 
         recoLocs = recoLocList[recoIndices]
@@ -103,7 +106,10 @@ def calcEventResolutions(recoLocList, truthLocList, assocRecoIndicesList):
         phiRes = res[:, 0]
         thetaRes = res[:, 1]
 
-        truthResolutions[tuple(truthLoc)] = {'phi':phiRes, 'theta':thetaRes}
+        if indiceType == 'TruthLoc':
+            truthResolutions[tuple(truthLoc)] = {'phi':phiRes, 'theta':thetaRes}
+        elif indiceType == 'TruthIndex':
+            truthResolutions[truthIndex] = {'phi':phiRes, 'theta':thetaRes}
 
     return truthResolutions
 
@@ -134,14 +140,14 @@ def getDictForAllEvents(tpData, dict_getter):
     #print(numEvents)
 
     #get a dict of truthResolutions across all events
-    extended_dict = {} # {(truthPhi, truthTheta): {'phi':phiRes, 'theta':thetaRes}}
+    extended_dict = {} # e.g. for calcEventResolutions {(truthPhi, truthTheta): {'phi':phiRes, 'theta':thetaRes}}
 
     #key_counter = 0
     for event in range(numEvents):
         recoLocList, truthLocList = getLocs(tpData, event)
         recoToTruthDists = allRecoToTruthDists(recoLocList, truthLocList, event)
-        truthsRecoIndices = getAssociatedRecoIndices(recoToTruthDists, cutoff=0.1)
-        event_dict = dict_getter(recoLocList, truthLocList, truthsRecoIndices)
+        assocRecoIndicesList = getAssociatedRecoIndices(recoToTruthDists, cutoff=0.1)
+        event_dict = dict_getter(recoLocList, truthLocList, assocRecoIndicesList)
         #print(len(event_dict.keys()))
         # if len(event_dict.keys()) == 5:
         #     print(event)
@@ -249,11 +255,15 @@ def plotMultiEventRes(tpData, energy):
 
     fig, ax = plt.subplots(1, 2)
 
+    binEnergyDict = {'1':{'phi':200, 'theta':100}, 
+                     '10':{'phi':75, 'theta':50}, 
+                     '100':{'phi':200, 'theta':150}}
+
     fig.suptitle(f"Angle Resolutions: {energy}GeV")
     for i in range(2):
         # Main histogram
-        phiCounts, _, _ = ax[i].hist(phiRes, bins=50, alpha=0.5, label='phi', color='blue')
-        thetaCounts, _, _ = ax[i].hist(thetaRes, bins=50, alpha=0.5, label='theta', color='orange')
+        phiCounts, _, _ = ax[i].hist(phiRes, bins=binEnergyDict[energy]['phi'], alpha=0.5, label='phi', color='blue')
+        thetaCounts, _, _ = ax[i].hist(thetaRes, bins=binEnergyDict[energy]['theta'], alpha=0.5, label='theta', color='orange')
 
         # Add error bars for standard deviation
         ax[i].errorbar(0, np.max(phiCounts)/2, xerr=np.std(phiRes), fmt='o', color='blue', label='std dev')
@@ -263,7 +273,8 @@ def plotMultiEventRes(tpData, energy):
         ax[i].legend()
 
         if i == 1:
-            ax[i].set_ylim(0, 5)
+            ax[i].set_ylim(0, 7)
+            ax[i].set_title("Zoomed Angle Resolution")
 
         plt.legend()
 
@@ -291,6 +302,78 @@ def plotMultiEventRes(tpData, energy):
 
     #plt.show()
 
+def calcSpBDist(recoDfs, assocRecoIndicesList, event):
+    EventRecoDf = recoDfs[event]
+    
+    recos_spB_dists = {}
+    for truthIndex, recoIndices in enumerate(assocRecoIndicesList):
+        assocRecoData = (EventRecoDf.iloc[recoIndices])
+        recos_spB_locs = np.array(assocRecoData[["spB_x", "spB_y", "spB_z"]])
+        recos_spB_dists[truthIndex] = (np.linalg.norm(recos_spB_locs, axis=1))
+
+    return recos_spB_dists
+
+def calcMeanDist(recoDfs, assocRecoIndicesList, event):
+    EventRecoDf = recoDfs[event]
+    
+    recos_mean_dists = {}
+    for truthIndex, recoIndices in enumerate(assocRecoIndicesList):
+        assocRecoData = (EventRecoDf.iloc[recoIndices])
+        recos_spB_locs = np.array(assocRecoData[["spB_x", "spB_y", "spB_z"]])
+        recos_spB_dists = (np.linalg.norm(recos_spB_locs, axis=1))
+        recos_spM_locs = np.array(assocRecoData[["spM_x", "spM_y", "spM_z"]])
+        recos_spM_dists = (np.linalg.norm(recos_spM_locs, axis=1))
+        recos_spT_locs = np.array(assocRecoData[["spT_x", "spT_y", "spT_z"]])
+        recos_spT_dists = (np.linalg.norm(recos_spT_locs, axis=1))
+        recos_mean_dists[truthIndex] = np.mean([recos_spB_dists, recos_spM_dists, recos_spT_dists], axis=0)
+
+    return recos_mean_dists
+
+def plot_spB_dist_vs_res(ax, tpData, event):
+    recoDfs, truthDfs = tpData
+
+    recoLocList, truthLocList = getLocs(tpData, event)
+    recoToTruthDists = allRecoToTruthDists(recoLocList, truthLocList, event)
+    assocRecoIndicesList = getAssociatedRecoIndices(recoToTruthDists, cutoff=0.1)
+    recos_spB_dists = calcSpBDist(recoDfs, assocRecoIndicesList, event)
+    truthResolutions = calcEventResolutions(recoLocList, truthLocList, assocRecoIndicesList, indiceType='TruthIndex')
+
+    for i, angle in enumerate(['phi', 'theta']):
+        ax[i].scatter(recos_spB_dists[0], np.abs(truthResolutions[0][angle]))
+        ax[i].set_xlabel("spB dist")
+        ax[i].set_ylabel(f"|{angle} res|")
+
+def plot_sp_mean_dist_vs_res(ax, tpData, event):
+    recoDfs, truthDfs = tpData
+
+    recoLocList, truthLocList = getLocs(tpData, event)
+    recoToTruthDists = allRecoToTruthDists(recoLocList, truthLocList, event)
+    assocRecoIndicesList = getAssociatedRecoIndices(recoToTruthDists, cutoff=0.1)
+    recos_mean_dist = calcMeanDist(recoDfs, assocRecoIndicesList, event)
+    truthResolutions = calcEventResolutions(recoLocList, truthLocList, assocRecoIndicesList, indiceType='TruthIndex')
+
+    for i, angle in enumerate(['phi', 'theta']):
+        ax[i].scatter(recos_mean_dist[0], np.abs(truthResolutions[0][angle]))
+        ax[i].set_xlabel("sp mean dist")
+        ax[i].set_ylabel(f"|{angle} res|")
+
+def layerAnalysis(tpData, energy):
+    """Code for Layer Analysis"""
+    fig, spBDistAx = plt.subplots(2, 2, figsize=(10, 5), sharex=True, sharey=False)
+    fig.suptitle(f"layer analysis: {energy}GeV")
+    numEvents = len(tpData[0])
+    for event in range(numEvents):
+        plot_spB_dist_vs_res(spBDistAx[0], tpData, event)
+        plot_sp_mean_dist_vs_res(spBDistAx[1], tpData, event)
+
+def redundancyVsAngle(ax, tpData, energy):
+    truthResDict = getDictForAllEvents(tpData, calcEventResolutions)
+
+    numRecosPerTruth = getNumRecosPerTruth(truthResDict)
+    plotRedundancyVsAngleRange(numRecosPerTruth, energy)
+    plotRedundancyVsBinnedTheta(ax, numRecosPerTruth, energy, num_bins=10)
+
+#global stuff
 energies = ['1', '10', '100']
 friendlyColours = plt.cm.Set1(np.linspace(0, 1, len(energies)))
 energy_colours = {energy: friendlyColours[i] for i, energy in enumerate(energies)}
@@ -300,7 +383,7 @@ if __name__ == "__main__":
 
     def test():
         # load tp data
-        _, redunBar = plt.subplots()
+        _, redundancyBarAx = plt.subplots()
         for energy in energies:
 
             recoPath = f"Plotting/data/{energy}GeV/TrackParams/reconstructedTPs.csv"
@@ -308,26 +391,13 @@ if __name__ == "__main__":
             recoDfs, truthDfs = loadTrackParams(recoPath, truthPath)
             tpData = (recoDfs, truthDfs)
 
-            plotMultiEventRes(tpData, energy)
             
-            truthResDict = getDictForAllEvents(tpData, calcEventResolutions)
-
-            numRecosPerTruth = getNumRecosPerTruth(truthResDict)
-            plotRedundancyVsAngleRange(numRecosPerTruth, energy)
-            plotRedundancyVsBinnedTheta(redunBar, numRecosPerTruth, energy, num_bins=10)
+            layerAnalysis(tpData, energy)
+            plotMultiEventRes(tpData, energy)
+            redundancyVsAngle(redundancyBarAx, tpData, energy)
+            
 
         plt.show()
-
-        # event = 0
-        # for event in range(10):
-        #     recoLocList, truthLocList = getLocs(tpData, event)
-        #     recoToTruthDists = allRecoToTruthDists(recoLocList, truthLocList, event)
-        #     truthsRecoIndices = getAssociatedRecoIndices(recoToTruthDists, cutoff=0.1)
-        #     #print(truthsRecoIndices)
-        #     assert(checkUniqueAssocRecoIndices([[1,2,3], [2,4,6,7]]))
-        #     assert(checkUniqueAssocRecoIndices(truthsRecoIndices))
-        #     eventRes = calcEventResolutions(recoLocList, truthLocList, truthsRecoIndices, event)
-        #     plotResolutions(eventRes)
 
     test()
         
