@@ -295,9 +295,6 @@ energies = ['1', '10', '100']
 friendlyColours = plt.cm.Set1(np.linspace(0, 1, len(energies)))
 energy_colours = {energy: friendlyColours[i] for i, energy in enumerate(energies)}
 
-for colour in energy_colours.values():
-    print(colour)
-
 if __name__ == "__main__":
     from tp_processing import loadTrackParams
 
