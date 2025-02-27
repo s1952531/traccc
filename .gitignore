@@ -37,3 +37,5 @@ out/
 # builds
 build/
 
+# plotting data folder (too large for remote machine)
+Plotting/data/
