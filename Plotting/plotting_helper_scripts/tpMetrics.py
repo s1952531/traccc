@@ -39,15 +39,15 @@ def checkUniqueIndices(assocRecoIndices):
 
     isUnique = len(uniqueAssocRecoIndices) == len(np.concatenate(assocRecoIndices))
 
-    if not isUnique:
-        print(assocRecoIndices)
-        print(np.concatenate(assocRecoIndices))
+    #if not isUnique:
+        #print(assocRecoIndices)
+        #print(np.concatenate(assocRecoIndices))
     
     return isUnique
 
 def getAssociatedRecoIndices(recoToTruthDists, cutoff=0.1):
     numTruths = recoToTruthDists.shape[1]
-    print('numTruths', numTruths)
+    #print('numTruths', numTruths)
 
     assocRecoIndicesList = []
 
@@ -57,10 +57,10 @@ def getAssociatedRecoIndices(recoToTruthDists, cutoff=0.1):
         assocRecoIndicesList.append(assocRecoIndices)
 
     isUnique = checkUniqueIndices(assocRecoIndicesList)
-    if not isUnique:
-        print(f"WARNING: Some recos have been assigned to multiple truth's - cutoff is too large")
-    else:
-        print(f"SUCCESS: All recos have been uniquely assigned to a truth")
+    #if not isUnique:
+        #print(f"WARNING: Some recos have been assigned to multiple truth's - cutoff is too large")
+    #else:
+        #print(f"SUCCESS: All recos have been uniquely assigned to a truth")
     #print(assocRecoIndicesList)
 
     return assocRecoIndicesList # a list containing a list of associated reco indices for each truth
@@ -131,7 +131,7 @@ def getDictForAllEvents(tpData, dict_getter):
     #getter_for_dict_to_extend: calcEventResolutions or getTruthToRecoDict
      
     numEvents = len(tpData[0]) # i.e. len of recoDfs
-    print(numEvents)
+    #print(numEvents)
 
     #get a dict of truthResolutions across all events
     extended_dict = {} # {(truthPhi, truthTheta): {'phi':phiRes, 'theta':thetaRes}}
@@ -180,7 +180,8 @@ def plotRedundancyVsAngleRange(numRecosPerTruth, energy):
     ax[1].set_xlabel(r"$\Theta$")
     ax[1].set_ylabel("Number of reco TPs")
 
-def plotRedundancyVsBinnedTheta(numRecosPerTruth, energy, num_bins=10):
+def plotRedundancyVsBinnedTheta(ax, numRecosPerTruth, energy, num_bins=10):
+
     truthThetas = [key[1] for key in numRecosPerTruth.keys()]
     numRecosPerThetaTruth = [value['theta'] for value in numRecosPerTruth.values()]
 
@@ -199,12 +200,15 @@ def plotRedundancyVsBinnedTheta(numRecosPerTruth, energy, num_bins=10):
 
     # Plot
     bin_centers = (bins[:-1] + bins[1:]) / 2  # Midpoint of each bin
-    plt.figure(figsize=(6, 4))
-    plt.bar(bin_centers, mean_recos, width=(bins[1] - bins[0]), align='center', yerr=sem_recos, capsize=5)
-    plt.xlabel(r"$\Theta$ (binned)")
-    plt.ylabel("Mean number of reco TPs")
-    plt.title(f"Redundancy vs Binned Theta {energy}GeV")
+    ax.bar(bin_centers, mean_recos, width=(bins[1] - bins[0]), align='center', \
+           yerr=sem_recos, ecolor=energy_colours[energy], capsize=5, color='none', edgecolor=energy_colours[energy], label=energy)
+    ax.set_xlabel(r"$\Theta$ (binned)")
+    ax.set_ylabel("Mean number of reco TPs")
+    ax.legend()
+    #ax.set_title(f"Redundancy vs Binned Theta {energy}GeV")
     #plt.show()
+
+    return ax
 
 def plotMultiEventRes(tpData, energy):
     #truthResolutions[truthIndex] = {'phi':phiRes, 'theta':thetaRes}
@@ -287,13 +291,19 @@ def plotMultiEventRes(tpData, energy):
 
     #plt.show()
 
+energies = ['1', '10', '100']
+friendlyColours = plt.cm.Set1(np.linspace(0, 1, len(energies)))
+energy_colours = {energy: friendlyColours[i] for i, energy in enumerate(energies)}
+
+for colour in energy_colours.values():
+    print(colour)
 
 if __name__ == "__main__":
     from tp_processing import loadTrackParams
 
     def test():
         # load tp data
-        energies = ['1', '10', '100']
+        _, redunBar = plt.subplots()
         for energy in energies:
 
             recoPath = f"Plotting/data/{energy}GeV/TrackParams/reconstructedTPs.csv"
@@ -307,7 +317,7 @@ if __name__ == "__main__":
 
             numRecosPerTruth = getNumRecosPerTruth(truthResDict)
             plotRedundancyVsAngleRange(numRecosPerTruth, energy)
-            plotRedundancyVsBinnedTheta(numRecosPerTruth, energy, num_bins=10)
+            plotRedundancyVsBinnedTheta(redunBar, numRecosPerTruth, energy, num_bins=10)
 
         plt.show()
 
