@@ -26,7 +26,8 @@ def loadTrackParams(recoPath, truthPath):
     #both paths have csv of has x, y, z; phi, phi_var, theta, theta_var
     
     #i want to have x, y, z, phi, phi_var, theta, theta_var as names of the cols
-    col_names = ["x", "y", "z", "phi", "phi_var", "theta", "theta_var"]
+    #global track dir params: x, y, z; phi, phi_var, theta, theta_var; spB_x, spB_y, spB_z, spM_x, spM_y, spM_z, spT_x, spT_y, spT_z
+    col_names = ["x", "y", "z", "phi", "phi_var", "theta", "theta_var", "spB_x", "spB_y", "spB_z", "spM_x", "spM_y", "spM_z", "spT_x", "spT_y", "spT_z"]
     
     recoDfs = []
     truthDfs = []
