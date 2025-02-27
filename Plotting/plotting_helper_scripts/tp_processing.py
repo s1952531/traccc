@@ -11,12 +11,6 @@ except:
 
 def loadTrackParams(recoPath, truthPath):
 
-    # print cwd
-    import os
-    print(os.getcwd())
-    print(recoPath)
-    print(truthPath)
-
     recoDataLines = getDataLines(recoPath)
     truthDataLines = getDataLines(truthPath)
 
@@ -27,8 +21,9 @@ def loadTrackParams(recoPath, truthPath):
     
     #i want to have x, y, z, phi, phi_var, theta, theta_var as names of the cols
     #global track dir params: x, y, z; phi, phi_var, theta, theta_var; spB_x, spB_y, spB_z, spM_x, spM_y, spM_z, spT_x, spT_y, spT_z
-    col_names = ["x", "y", "z", "phi", "phi_var", "theta", "theta_var", "spB_x", "spB_y", "spB_z", "spM_x", "spM_y", "spM_z", "spT_x", "spT_y", "spT_z"]
-    
+    reco_col_names = ["x", "y", "z", "phi", "phi_var", "theta", "theta_var", "spB_x", "spB_y", "spB_z", "spM_x", "spM_y", "spM_z", "spT_x", "spT_y", "spT_z"]
+    truth_col_names = ["x", "y", "z", "phi", "phi_var", "theta", "theta_var"]
+
     recoDfs = []
     truthDfs = []
 
@@ -43,8 +38,8 @@ def loadTrackParams(recoPath, truthPath):
         # print("Truth first line: ", eventFirstLine[1])
         # print("Truth num rows: ", nRowsInEvent[1])
 
-        recoDfs.append(pd.read_csv(recoPath, names=col_names, dtype=float, skiprows=eventFirstLine[0], nrows=nRowsInEvent[0]))
-        truthDfs.append(pd.read_csv(truthPath, names=col_names, dtype=float, skiprows=eventFirstLine[1], nrows=nRowsInEvent[1]))
+        recoDfs.append(pd.read_csv(recoPath, names=reco_col_names, dtype=float, skiprows=eventFirstLine[0], nrows=nRowsInEvent[0]))
+        truthDfs.append(pd.read_csv(truthPath, names=truth_col_names, dtype=float, skiprows=eventFirstLine[1], nrows=nRowsInEvent[1]))
 
     return recoDfs, truthDfs
 
