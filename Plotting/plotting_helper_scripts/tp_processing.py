@@ -3,13 +3,19 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import numpy as np
 
-if __name__ == "__main__":
+try:#__name__ == "__main__":
     from findEventHeaderLines import getDataLines
-else:
+except:
     from plotting_helper_scripts.findEventHeaderLines import getDataLines
 
 
 def loadTrackParams(recoPath, truthPath):
+
+    # print cwd
+    import os
+    print(os.getcwd())
+    print(recoPath)
+    print(truthPath)
 
     recoDataLines = getDataLines(recoPath)
     truthDataLines = getDataLines(truthPath)
