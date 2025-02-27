@@ -31,7 +31,7 @@ void write_output_headers()
     spCoordsFile.close();
 
     std::ofstream recoTPsFile("Plotting/TrackParams/reconstructedTPs.csv", std::ios_base::app);
-    recoTPsFile << "global track dir params: x, y, z; phi, phi_var, theta, theta_var" << std::endl;
+    recoTPsFile << "global track dir params: x, y, z; phi, phi_var, theta, theta_var; spB_x, spB_y, spB_z, spM_x, spM_y, spM_z, spT_x, spT_y, spT_z" << std::endl;
     recoTPsFile.close();
 
     std::ofstream truthTPsFile("Plotting/TrackParams/truthTPs.csv", std::ios_base::app);
