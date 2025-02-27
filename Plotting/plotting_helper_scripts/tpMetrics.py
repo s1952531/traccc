@@ -125,7 +125,7 @@ def plotResolutions(truthResolutions):
 
         plotCounter += 1
 
-    plt.show()
+    #plt.show()
 
 def getDictForAllEvents(tpData, dict_getter):
     #getter_for_dict_to_extend: calcEventResolutions or getTruthToRecoDict
@@ -159,7 +159,7 @@ def getNumRecosPerTruth(truthToRecoDict):
     return numRecosPerTruth
 
 
-def plotRedundancyVsAngleRange(numRecosPerTruth):
+def plotRedundancyVsAngleRange(numRecosPerTruth, energy):
     # truthToRecoDict[tuple(truthLoc)] = {'phi':recoPhi, 'theta':recoTheta}
 
     truthPhis = [key[0] for key in numRecosPerTruth.keys()]
@@ -170,6 +170,8 @@ def plotRedundancyVsAngleRange(numRecosPerTruth):
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 5))
 
+    fig.suptitle(f"Redundancy vs Angle: {energy}GeV")
+
     ax[0].scatter(truthPhis, numRecosPerPhiTruth)
     ax[0].set_xlabel(r"$\Phi$")
     ax[0].set_ylabel("Number of reco TPs")
@@ -178,7 +180,7 @@ def plotRedundancyVsAngleRange(numRecosPerTruth):
     ax[1].set_xlabel(r"$\Theta$")
     ax[1].set_ylabel("Number of reco TPs")
 
-def plotRedundancyVsBinnedTheta(numRecosPerTruth, num_bins=10):
+def plotRedundancyVsBinnedTheta(numRecosPerTruth, energy, num_bins=10):
     truthThetas = [key[1] for key in numRecosPerTruth.keys()]
     numRecosPerThetaTruth = [value['theta'] for value in numRecosPerTruth.values()]
 
@@ -201,10 +203,10 @@ def plotRedundancyVsBinnedTheta(numRecosPerTruth, num_bins=10):
     plt.bar(bin_centers, mean_recos, width=(bins[1] - bins[0]), align='center', yerr=sem_recos, capsize=5)
     plt.xlabel(r"$\Theta$ (binned)")
     plt.ylabel("Mean number of reco TPs")
-    plt.title("Redundancy vs Binned Theta")
-    plt.show()
+    plt.title(f"Redundancy vs Binned Theta {energy}GeV")
+    #plt.show()
 
-def plotMultiEventRes(tpData):
+def plotMultiEventRes(tpData, energy):
     #truthResolutions[truthIndex] = {'phi':phiRes, 'theta':thetaRes}
 
     #get a dict of truthResolutions across all events
@@ -243,6 +245,7 @@ def plotMultiEventRes(tpData):
 
     fig, ax = plt.subplots(1, 2)
 
+    fig.suptitle(f"Angle Resolutions: {energy}GeV")
     for i in range(2):
         # Main histogram
         phiCounts, _, _ = ax[i].hist(phiRes, bins=50, alpha=0.5, label='phi', color='blue')
@@ -282,7 +285,7 @@ def plotMultiEventRes(tpData):
     # ax[1].hist2d(truthThetas, thetaRes, bins=(len(truthThetaBins), 20), cmap='viridis')
     # ax[1].set_xlabel(r"$\Theta$")
 
-    plt.show()
+    #plt.show()
 
 
 if __name__ == "__main__":
@@ -290,18 +293,21 @@ if __name__ == "__main__":
 
     def test():
         # load tp data
-        recoPath = "Plotting/data/TrackParams/reconstructedTPs.csv"
-        truthPath = "Plotting/data/TrackParams/truthTPs.csv"
-        recoDfs, truthDfs = loadTrackParams(recoPath, truthPath)
-        tpData = (recoDfs, truthDfs)
+        energies = ['1', '10', '100']
+        for energy in energies:
 
-        plotMultiEventRes(tpData)
-        
-        truthResDict = getDictForAllEvents(tpData, calcEventResolutions)
+            recoPath = f"Plotting/data/{energy}GeV/TrackParams/reconstructedTPs.csv"
+            truthPath = f"Plotting/data/{energy}GeV/TrackParams/truthTPs.csv"
+            recoDfs, truthDfs = loadTrackParams(recoPath, truthPath)
+            tpData = (recoDfs, truthDfs)
 
-        numRecosPerTruth = getNumRecosPerTruth(truthResDict)
-        plotRedundancyVsAngleRange(numRecosPerTruth)
-        plotRedundancyVsBinnedTheta(numRecosPerTruth, num_bins=10)
+            plotMultiEventRes(tpData, energy)
+            
+            truthResDict = getDictForAllEvents(tpData, calcEventResolutions)
+
+            numRecosPerTruth = getNumRecosPerTruth(truthResDict)
+            plotRedundancyVsAngleRange(numRecosPerTruth, energy)
+            plotRedundancyVsBinnedTheta(numRecosPerTruth, energy, num_bins=10)
 
         plt.show()
 
