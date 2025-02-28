@@ -65,7 +65,7 @@ def getAssociatedRecoIndices(recoToTruthDists, cutoff=0.1):
     #print(assocRecoIndicesList)
 
     return assocRecoIndicesList # a list containing a list of associated reco indices for each truth
-                                # [ [Event0s recoIndices], [Event1s recoIndices], ... ]
+                                # [ [Truth0s recoIndices], [Truth1s recoIndices], ... ]
                                 # recoIndices are the row indice of the event's recoDf
 
 def getTruthToRecoDict(recoLocList, truthLocList, assocRecoIndicesList):
@@ -392,8 +392,8 @@ if __name__ == "__main__":
             tpData = (recoDfs, truthDfs)
 
             
-            layerAnalysis(tpData, energy)
-            plotMultiEventRes(tpData, energy)
+            #layerAnalysis(tpData, energy)
+            #plotMultiEventRes(tpData, energy)
             redundancyVsAngle(redundancyBarAx, tpData, energy)
             
 
