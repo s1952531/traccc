@@ -307,6 +307,8 @@ def calcSpBDist(recoDfs, assocRecoIndicesList, event):
     
     recos_spB_dists = {}
     for truthIndex, recoIndices in enumerate(assocRecoIndicesList):
+        if len(recoIndices) == 0:
+            continue
         assocRecoData = (EventRecoDf.iloc[recoIndices])
         recos_spB_locs = np.array(assocRecoData[["spB_x", "spB_y", "spB_z"]])
         recos_spB_dists[truthIndex] = (np.linalg.norm(recos_spB_locs, axis=1))
@@ -318,6 +320,8 @@ def calcMeanDist(recoDfs, assocRecoIndicesList, event):
     
     recos_mean_dists = {}
     for truthIndex, recoIndices in enumerate(assocRecoIndicesList):
+        if len(recoIndices) == 0:
+            continue
         assocRecoData = (EventRecoDf.iloc[recoIndices])
         recos_spB_locs = np.array(assocRecoData[["spB_x", "spB_y", "spB_z"]])
         recos_spB_dists = (np.linalg.norm(recos_spB_locs, axis=1))
@@ -335,36 +339,109 @@ def plot_spB_dist_vs_res(ax, tpData, event):
     recoLocList, truthLocList = getLocs(tpData, event)
     recoToTruthDists = allRecoToTruthDists(recoLocList, truthLocList, event)
     assocRecoIndicesList = getAssociatedRecoIndices(recoToTruthDists, cutoff=0.1)
-    recos_spB_dists = calcSpBDist(recoDfs, assocRecoIndicesList, event)
-    truthResolutions = calcEventResolutions(recoLocList, truthLocList, assocRecoIndicesList, indiceType='TruthIndex')
+    recos_spB_dists_dict = calcSpBDist(recoDfs, assocRecoIndicesList, event)
+    truthResolutions_dict = calcEventResolutions(recoLocList, truthLocList, assocRecoIndicesList, indiceType='TruthIndex')
 
+    max_ys = {}
+    recos_mean_dist_dict = {'phi':[], 'theta':[]}
+    abs_val_truthRes_dict = {'phi':[], 'theta':[]}
     for i, angle in enumerate(['phi', 'theta']):
-        ax[i].scatter(recos_spB_dists[0], np.abs(truthResolutions[0][angle]))
-        ax[i].set_xlabel("spB dist")
-        ax[i].set_ylabel(f"|{angle} res|")
+        max_ys[angle] = 0
+        for recos_spB_dists, truthResolutions in zip(recos_spB_dists_dict.values(), truthResolutions_dict.values()):
+            ax[i].scatter(recos_spB_dists, np.abs(truthResolutions[angle]))
+            #ax[i].hist2d(recos_spB_dists, np.abs(truthResolutions[angle]), bins=(10, 10), cmap='viridis')
+            ax[i].set_xlabel("spB dist")
+            ax[i].set_ylabel(f"|{angle} res|")
+
+            y_max = np.max(np.abs(truthResolutions[angle]))
+            if y_max > max_ys[angle]:
+                max_ys[angle] = y_max
+
+            recos_mean_dist_dict[angle].extend(recos_spB_dists)
+            abs_val_truthRes_dict[angle].extend(np.abs(truthResolutions[angle]))
+        
+    return max_ys, recos_mean_dist_dict, abs_val_truthRes_dict
 
 def plot_sp_mean_dist_vs_res(ax, tpData, event):
-    recoDfs, truthDfs = tpData
+    recoDfs, _ = tpData
 
     recoLocList, truthLocList = getLocs(tpData, event)
     recoToTruthDists = allRecoToTruthDists(recoLocList, truthLocList, event)
     assocRecoIndicesList = getAssociatedRecoIndices(recoToTruthDists, cutoff=0.1)
-    recos_mean_dist = calcMeanDist(recoDfs, assocRecoIndicesList, event)
-    truthResolutions = calcEventResolutions(recoLocList, truthLocList, assocRecoIndicesList, indiceType='TruthIndex')
+    recos_mean_dists_dict = calcMeanDist(recoDfs, assocRecoIndicesList, event)
+    truthResolutions_dict = calcEventResolutions(recoLocList, truthLocList, assocRecoIndicesList, indiceType='TruthIndex')
 
+    max_ys = {}
+    recos_mean_dist_dict = {'phi':[], 'theta':[]}
+    abs_val_truthRes_dict = {'phi':[], 'theta':[]}
     for i, angle in enumerate(['phi', 'theta']):
-        ax[i].scatter(recos_mean_dist[0], np.abs(truthResolutions[0][angle]))
-        ax[i].set_xlabel("sp mean dist")
-        ax[i].set_ylabel(f"|{angle} res|")
+        max_ys[angle] = 0
+        for recos_mean_dists, truthResolutions in zip(recos_mean_dists_dict.values(), truthResolutions_dict.values()):
+            ax[i].scatter(recos_mean_dists, np.abs(truthResolutions[angle]))
+            #ax[i].hist2d(recos_mean_dists, np.abs(truthResolutions[angle]), bins=(10, 10), cmap='viridis')
+            ax[i].set_xlabel("sp mean dist")
+            ax[i].set_ylabel(f"|{angle} res|")
+            
+            y_max = np.max(np.abs(truthResolutions[angle]))
+            if y_max > max_ys[angle]:
+                max_ys[angle] = y_max
 
+            recos_mean_dist_dict[angle].extend(recos_mean_dists)
+            abs_val_truthRes_dict[angle].extend(np.abs(truthResolutions[angle]))
+    
+    return max_ys, recos_mean_dist_dict, abs_val_truthRes_dict
+    
 def layerAnalysis(tpData, energy):
     """Code for Layer Analysis"""
     fig, spBDistAx = plt.subplots(2, 2, figsize=(10, 5), sharex=True, sharey=False)
     fig.suptitle(f"layer analysis: {energy}GeV")
     numEvents = len(tpData[0])
+
+    max_ys_spB = {'phi':[], 'theta':[]}
+    max_ys_mean = {'phi':[], 'theta':[]}
+    recos_mean_dist_dict_spB = {'phi':[], 'theta':[]}
+    recos_mean_dist_dict_mean = {'phi':[], 'theta':[]}
+    abs_val_truthRes_dict_spB = {'phi':[], 'theta':[]}
+    abs_val_truthRes_dict_mean = {'phi':[], 'theta':[]}
+
     for event in range(numEvents):
-        plot_spB_dist_vs_res(spBDistAx[0], tpData, event)
-        plot_sp_mean_dist_vs_res(spBDistAx[1], tpData, event)
+        curr_max_ys_spB, curr_spB_recos_mean_dist, curr_spB_abs_val_truthRes = plot_spB_dist_vs_res(spBDistAx[0], tpData, event)
+        curr_max_ys_mean, curr_mean_recos_mean_dist, curr_mean_abs_val_truthRes = plot_sp_mean_dist_vs_res(spBDistAx[1], tpData, event)
+
+        for angle in ['phi', 'theta']:
+            max_ys_spB[angle].append(curr_max_ys_spB[angle])
+            max_ys_mean[angle].append(curr_max_ys_mean[angle])
+            recos_mean_dist_dict_spB[angle].extend(curr_spB_recos_mean_dist[angle])
+            recos_mean_dist_dict_mean[angle].extend(curr_mean_recos_mean_dist[angle])
+            abs_val_truthRes_dict_spB[angle].extend(curr_spB_abs_val_truthRes[angle])
+            abs_val_truthRes_dict_mean[angle].extend(curr_mean_abs_val_truthRes[angle])
+
+
+    for i, angle in enumerate(['phi', 'theta']):
+        #sort and get the 90th percentile
+        max_ys_spB[angle] = sorted(max_ys_spB[angle])
+        max_ys_mean[angle] = sorted(max_ys_mean[angle])
+        max_ys_spB[angle] = max_ys_spB[angle][int(0.9*len(max_ys_spB[angle]))]
+        max_ys_mean[angle] = max_ys_mean[angle][int(0.9*len(max_ys_mean[angle]))]
+
+        spBDistAx[0, i].set_ylim(0, (max_ys_spB[angle]))
+        spBDistAx[1, i].set_ylim(0, (max_ys_mean[angle]))
+
+    #plot 2D histograms for res vs angles
+    fig, ax = plt.subplots(2, 2, figsize=(10, 5), sharex=True)
+    fig.suptitle(f"layer analysis: {energy}GeV")
+    #plot spB and means as before
+
+    for i, angle in enumerate(['phi', 'theta']):
+        ax[0, i].hist2d(recos_mean_dist_dict_spB[angle], abs_val_truthRes_dict_spB[angle], bins=(100, 100), cmap='viridis')
+        ax[0, i].set_xlabel("spB dist")
+        ax[0, i].set_ylabel(f"|{angle} res|")
+        ax[0, i].set_ylim(0, (max_ys_spB[angle]))
+
+        ax[1, i].hist2d(recos_mean_dist_dict_mean[angle], abs_val_truthRes_dict_mean[angle], bins=(1000, 100), cmap='viridis')
+        ax[1, i].set_xlabel("sp mean dist")
+        ax[1, i].set_ylabel(f"|{angle} res|")
+        ax[1, i].set_ylim(0, (max_ys_mean[angle]))
 
 def redundancyVsAngle(ax, tpData, energy):
     truthResDict = getDictForAllEvents(tpData, calcEventResolutions)
@@ -383,7 +460,7 @@ if __name__ == "__main__":
 
     def test():
         # load tp data
-        _, redundancyBarAx = plt.subplots()
+        #_, redundancyBarAx = plt.subplots()
         for energy in energies:
 
             recoPath = f"Plotting/data/{energy}GeV/TrackParams/reconstructedTPs.csv"
@@ -392,9 +469,9 @@ if __name__ == "__main__":
             tpData = (recoDfs, truthDfs)
 
             
-            #layerAnalysis(tpData, energy)
+            layerAnalysis(tpData, energy)
             #plotMultiEventRes(tpData, energy)
-            redundancyVsAngle(redundancyBarAx, tpData, energy)
+            #redundancyVsAngle(redundancyBarAx, tpData, energy)
             
 
         plt.show()

@@ -7,6 +7,7 @@ except:
     from plotting_helper_scripts.tp_processing import loadTrackParams
 
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def calc_unique_sp_fraction(eventRecoDf, recoIndices):
     # get a list of all spacepoints from the recoTPs
@@ -48,21 +49,38 @@ def sp_sharing(ax, tpData, event):
 
     return spFractions, redundancies
 
-def sp_sharing_all_events(tpData):
+def sp_sharing_all_events(tpData, energy):
     numEvents = len(tpData[0])
 
-    fig, ax = plt.subplots(1, 1)
-    ax.set_xlabel("Fraction of shared SPs (per truth)")
-    ax.set_ylabel("Number of redundant recoTPs")
+    fig, ax = plt.subplots(2, 1, sharex=True, figsize=(6, 8))
+    fig.subplots_adjust(right=0.85)  # Leave space for colorbar
+    fig.suptitle(f"Energy: {energy} GeV")
+
+    ax[0].set_xlabel("Fraction of shared SPs (per truth)")
+    ax[0].set_ylabel("Number of redundant recoTPs")
+
+    ax[1].set_xlabel("Fraction of shared SPs (per truth)")
+    ax[1].set_ylabel("Counts")
+
+
     
     spFractions, redundancies = [], []
     for event in range(numEvents):
-        curr_spFractions, curr_redundancies = sp_sharing(ax, tpData, event)
+        curr_spFractions, curr_redundancies = sp_sharing(ax[0], tpData, event)
         spFractions.extend(curr_spFractions)
         redundancies.extend(curr_redundancies)
 
-    plt.hist2d(spFractions, redundancies, bins=(20, 20), cmap='gray')
-    plt.colorbar()
+    hist = ax[0].hist2d(spFractions, redundancies, bins=(20, 20))
+
+    #Manually add the colorbar to the right of the plot without shrinking it
+    cbar_ax = fig.add_axes([0.87, 0.53, 0.02, 0.35])  # [left, bottom, width, height]
+    fig.colorbar(hist[3], cax=cbar_ax, label="Counts")
+
+    ax[1].hist(spFractions, bins=20, alpha=0.5)
+
+    # Ensure both x-axes have the same limits
+    ax[1].set_xlim(ax[0].get_xlim())
+
 def test():
     energies = ['1', '10', '100']
 
@@ -73,7 +91,7 @@ def test():
         recoDfs, truthDataDfs = loadTrackParams(recoPath, truthPath)
         tpData = (recoDfs, truthDataDfs)
 
-        sp_sharing_all_events(tpData)
+        sp_sharing_all_events(tpData, energy)
 
     plt.show()
 
