@@ -8,7 +8,6 @@ try:#__name__ == "__main__":
 except:
     from plotting_helper_scripts.findEventHeaderLines import getDataLines
 
-
 def loadTrackParams(recoPath, truthPath):
 
     recoDataLines = getDataLines(recoPath)
