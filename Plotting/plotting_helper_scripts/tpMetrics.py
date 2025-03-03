@@ -419,10 +419,11 @@ def layerAnalysis(tpData, energy):
 
     for i, angle in enumerate(['phi', 'theta']):
         #sort and get the 90th percentile
+        percentile = 0.9
         max_ys_spB[angle] = sorted(max_ys_spB[angle])
         max_ys_mean[angle] = sorted(max_ys_mean[angle])
-        max_ys_spB[angle] = max_ys_spB[angle][int(0.9*len(max_ys_spB[angle]))]
-        max_ys_mean[angle] = max_ys_mean[angle][int(0.9*len(max_ys_mean[angle]))]
+        max_ys_spB[angle] = max_ys_spB[angle][int(percentile*len(max_ys_spB[angle]))]
+        max_ys_mean[angle] = max_ys_mean[angle][int(percentile*len(max_ys_mean[angle]))]
 
         spBDistAx[0, i].set_ylim(0, (max_ys_spB[angle]))
         spBDistAx[1, i].set_ylim(0, (max_ys_mean[angle]))
@@ -433,12 +434,12 @@ def layerAnalysis(tpData, energy):
     #plot spB and means as before
 
     for i, angle in enumerate(['phi', 'theta']):
-        ax[0, i].hist2d(recos_mean_dist_dict_spB[angle], abs_val_truthRes_dict_spB[angle], bins=(100, 100), cmap='viridis')
+        ax[0, i].hist2d(recos_mean_dist_dict_spB[angle], abs_val_truthRes_dict_spB[angle], bins=(50, 500), cmap='viridis')
         ax[0, i].set_xlabel("spB dist")
         ax[0, i].set_ylabel(f"|{angle} res|")
         ax[0, i].set_ylim(0, (max_ys_spB[angle]))
 
-        ax[1, i].hist2d(recos_mean_dist_dict_mean[angle], abs_val_truthRes_dict_mean[angle], bins=(1000, 100), cmap='viridis')
+        ax[1, i].hist2d(recos_mean_dist_dict_mean[angle], abs_val_truthRes_dict_mean[angle], bins=(50, 500), cmap='viridis')
         ax[1, i].set_xlabel("sp mean dist")
         ax[1, i].set_ylabel(f"|{angle} res|")
         ax[1, i].set_ylim(0, (max_ys_mean[angle]))
@@ -460,7 +461,7 @@ if __name__ == "__main__":
 
     def test():
         # load tp data
-        #_, redundancyBarAx = plt.subplots()
+        _, redundancyBarAx = plt.subplots()
         for energy in energies:
 
             recoPath = f"Plotting/data/{energy}GeV/TrackParams/reconstructedTPs.csv"
@@ -469,8 +470,8 @@ if __name__ == "__main__":
             tpData = (recoDfs, truthDfs)
 
             
-            layerAnalysis(tpData, energy)
-            #plotMultiEventRes(tpData, energy)
+            #layerAnalysis(tpData, energy)
+            plotMultiEventRes(tpData, energy)
             #redundancyVsAngle(redundancyBarAx, tpData, energy)
             
 
