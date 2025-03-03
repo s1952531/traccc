@@ -1,6 +1,9 @@
 import numpy as np
 
-from plotting_helper_scripts.findEventHeaderLines import getDataLines
+try: 
+    from plotting_helper_scripts.findEventHeaderLines import getDataLines
+except:
+    from findEventHeaderLines import getDataLines
 
 def loadSeeds(unfilteredSeedPath, filteredSeedPath):
 
